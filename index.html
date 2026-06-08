@@ -3,35 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Журнал АКБ</title>
+    <title>Бланк замены АКБ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; background-color: var(--tg-theme-secondary-bg-color, #f0f0f0); color: var(--tg-theme-text-color, #000000); }
-        button { width: 100%; padding: 15px; background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        body {
+            font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 10px;
+            margin: 0;
+        }
+        h2 { text-align: center; margin-bottom: 15px; font-size: 20px; }
+        
+        /* Контейнер для скролла на узких экранах */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px; /* Минимальная ширина, чтобы столбцы не слипались */
+        }
+        
+        /* Рисуем строгие границы как в Excel/Word */
+        th, td {
+            border: 1px solid var(--tg-theme-text-color, #000000);
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 14px;
+        }
+        
+        th { font-weight: bold; }
+        
+        /* Делаем поля ввода прозрачными, чтобы они сливались с ячейками */
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            background: transparent;
+            color: var(--tg-theme-text-color, #000000);
+            text-align: center;
+            font-size: 15px;
+            outline: none;
+        }
+        
+        /* Убираем уродливые стрелочки у цифр */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        
+        /* Настраиваем кружочки для выбора действия */
+        input[type="radio"] { 
+            transform: scale(1.4); 
+            margin: 0; 
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .auto-text { color: var(--tg-theme-hint-color, gray); font-size: 12px; }
     </style>
 </head>
 <body>
-    <h2>Замена АКБ</h2>
-    <div class="form-group"><label>Робот (номер):</label><input type="number" id="robot"></div>
-    <div class="form-group"><label>Действие:</label><select id="action"><option value="Замена">Замена</option><option value="Отключ">Отключ</option><option value="Низкий V">Низкий V</option></select></div>
-    <div class="form-group"><label>АКБ (номер):</label><input type="number" id="akb"></div>
-    <div class="form-group"><label>Заряд (%):</label><input type="number" id="charge"></div>
-    <div class="form-group"><label>Комментарий:</label><input type="text" id="comment"></div>
-    <button id="send-btn">Отправить</button>
+    <h2>Бланк замены АКБ</h2>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">1<br>дата</th>
+                    <th rowspan="2">2<br>время</th>
+                    <th rowspan="2">3<br>робот</th>
+                    <th colspan="3">4</th>
+                    <th rowspan="2">5<br>АКБ</th>
+                    <th rowspan="2">6<br>%</th>
+                    <th rowspan="2">комментарий</th>
+                </tr>
+                <tr>
+                    <th>замена</th>
+                    <th>отключ</th>
+                    <th>низкий V</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="auto-text">Авто</span></td>
+                    <td><span class="auto-text">Авто</span></td>
+                    
+                    <td><input type="number" id="robot" placeholder="..."></td>
+                    
+                    <td><input type="radio" name="action" value="Замена" checked></td>
+                    <td><input type="radio" name="action" value="Отключ"></td>
+                    <td><input type="radio" name="action" value="Низкий V"></td>
+                    
+                    <td><input type="number" id="akb" placeholder="..."></td>
+                    <td><input type="number" id="charge" placeholder="..."></td>
+                    <td><input type="text" id="comment" placeholder="текст"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <button id="send-btn">Отправить данные</button>
+
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        
         document.getElementById('send-btn').addEventListener('click', () => {
+            let robot = document.getElementById('robot').value;
+            let akb = document.getElementById('akb').value;
+            let charge = document.getElementById('charge').value;
+            let comment = document.getElementById('comment').value;
+            
+            // Читаем, в какой колонке сотрудник поставил точку
+            let actionElement = document.querySelector('input[name="action"]:checked');
+            let action = actionElement ? actionElement.value : "";
+
+            if(!robot || !akb || !charge) {
+                tg.showAlert("Заполни номера робота, АКБ и заряд!");
+                return;
+            }
+
             let data = {
-                robot: document.getElementById('robot').value,
-                action: document.getElementById('action').value,
-                akb: document.getElementById('akb').value,
-                charge: document.getElementById('charge').value,
-                comment: document.getElementById('comment').value
+                robot: robot,
+                action: action,
+                akb: akb,
+                charge: charge,
+                comment: comment
             };
+
             tg.sendData(JSON.stringify(data));
         });
     </script>
