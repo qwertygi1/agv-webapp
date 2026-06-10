@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Бланк замены АКБ</title>
+    <title>Бланк АКБ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            padding: 10px;
+            padding: 15px;
             margin: 0;
         }
-        h2 { text-align: center; margin-bottom: 15px; font-size: 20px; }
+        h2 { text-align: center; margin-bottom: 20px; font-size: 20px; }
         
-        /* Контейнер для скролла на узких экранах */
         .table-container {
             overflow-x: auto;
             margin-bottom: 20px;
@@ -24,42 +23,41 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 650px; /* Минимальная ширина, чтобы столбцы не слипались */
         }
         
-        /* Рисуем строгие границы как в Excel/Word */
         th, td {
             border: 1px solid var(--tg-theme-text-color, #000000);
             text-align: center;
-            padding: 8px 4px;
-            font-size: 14px;
+            padding: 12px 5px;
+            font-size: 15px;
         }
         
-        th { font-weight: bold; }
+        th { 
+            font-weight: bold; 
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5); 
+        }
         
-        /* Делаем поля ввода прозрачными, чтобы они сливались с ячейками */
-        input[type="number"], input[type="text"] {
+        input[type="number"] {
             width: 100%;
             box-sizing: border-box;
             border: none;
             background: transparent;
             color: var(--tg-theme-text-color, #000000);
             text-align: center;
-            font-size: 15px;
+            font-size: 16px;
             outline: none;
         }
         
-        /* Убираем уродливые стрелочки у цифр */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
         }
         
-        /* Настраиваем кружочки для выбора действия */
-        input[type="radio"] { 
-            transform: scale(1.4); 
-            margin: 0; 
+        /* Стилизуем чекбокс, чтобы по нему было легко попасть пальцем */
+        input[type="checkbox"] { 
+            transform: scale(1.6); 
+            cursor: pointer; 
         }
         
         button {
@@ -73,44 +71,30 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .auto-text { color: var(--tg-theme-hint-color, gray); font-size: 12px; }
+        .auto-text { color: var(--tg-theme-hint-color, gray); font-size: 13px; }
     </style>
 </head>
 <body>
-    <h2>Бланк замены АКБ</h2>
+    <h2>Бланк учета АКБ</h2>
     
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th rowspan="2">1<br>дата</th>
-                    <th rowspan="2">2<br>время</th>
-                    <th rowspan="2">3<br>робот</th>
-                    <th colspan="3">4</th>
-                    <th rowspan="2">5<br>АКБ</th>
-                    <th rowspan="2">6<br>%</th>
-                    <th rowspan="2">комментарий</th>
-                </tr>
-                <tr>
-                    <th>замена</th>
-                    <th>отключ</th>
-                    <th>низкий V</th>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Робот</th>
+                    <th>АКБ</th>
+                    <th>Установлен</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><span class="auto-text">Авто</span></td>
                     <td><span class="auto-text">Авто</span></td>
-                    
                     <td><input type="number" id="robot" placeholder="..."></td>
-                    
-                    <td><input type="radio" name="action" value="Замена" checked></td>
-                    <td><input type="radio" name="action" value="Отключ"></td>
-                    <td><input type="radio" name="action" value="Низкий V"></td>
-                    
                     <td><input type="number" id="akb" placeholder="..."></td>
-                    <td><input type="number" id="charge" placeholder="..."></td>
-                    <td><input type="text" id="comment" placeholder="текст"></td>
+                    <td><input type="checkbox" id="installed" checked></td>
                 </tr>
             </tbody>
         </table>
@@ -125,24 +109,18 @@
         document.getElementById('send-btn').addEventListener('click', () => {
             let robot = document.getElementById('robot').value;
             let akb = document.getElementById('akb').value;
-            let charge = document.getElementById('charge').value;
-            let comment = document.getElementById('comment').value;
-            
-            // Читаем, в какой колонке сотрудник поставил точку
-            let actionElement = document.querySelector('input[name="action"]:checked');
-            let action = actionElement ? actionElement.value : "";
+            let installed = document.getElementById('installed').checked;
 
-            if(!robot || !akb || !charge) {
-                tg.showAlert("Заполни номера робота, АКБ и заряд!");
+            if(!robot || !akb) {
+                tg.showAlert("Заполни номер робота и номер АКБ!");
                 return;
             }
 
             let data = {
                 robot: robot,
-                action: action,
                 akb: akb,
-                charge: charge,
-                comment: comment
+                // Если галочка стоит, отправляем эмодзи галочки, если нет — крестик
+                installed: installed ? "✅" : "❌"
             };
 
             tg.sendData(JSON.stringify(data));
